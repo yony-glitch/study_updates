@@ -7,7 +7,7 @@ import time
 # RSS 피드 리스트
 RSS_FEEDS = {
     "https://brunch.co.kr/rss/@@eZqg": "Cherry",
-
+    "https://design-tra.tistory.com/rss": "Voyage: 사용자에게로 향하는 여정",
 }
 
 NOTION_TOKEN = os.environ['NOTION_TOKEN']
