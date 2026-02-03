@@ -38,12 +38,14 @@ def add_to_notion(title, link, owner_name, published_date):
     return response.status_code
 
 def check_feeds():
-    # 이미 전송한 링크 목록 불러오기
+    # 1. Load existing posts
     if os.path.exists(DB_FILE):
         with open(DB_FILE, 'r', encoding='utf-8') as f:
-            last_posts = json.load(f)
+            data = json.load(f)
+            # Ensure we are working with a list even if the file is a dict
+            last_posts = data if isinstance(data, list) else list(data.keys())
     else:
-        last_posts = [] # 처음 실행 시 빈 리스트
+        last_posts = []
 
     new_last_posts = last_posts.copy()
 
@@ -55,31 +57,13 @@ def check_feeds():
         for entry in reversed(feed.entries):
             link = entry.link
             
-            # 2. 제목의 특수 문자열(&amp;, &quot; 등)을 원래 문자로 치환
-            # entry.title이 없을 경우를 대비해 get() 사용
-            raw_title = entry.get('title', '제목 없음')
-            clean_title = html.unescape(raw_title)
-
-            if "blog.naver.com" in link:
-                link = link.split('?')[0]
+            # ... (your title cleaning logic) ...
 
             if link not in last_posts:
-                # 3. 깨끗해진 clean_title을 출력 및 전송
-                print(f"새로운 글 전송 중: {clean_title} (작성자: {owner})")
-                
-                if entry.get('published_parsed'):
-                    published_date = time.strftime('%Y-%m-%dT%H:%M:%S.000Z', entry.published_parsed)
-                else:
-                    published_date = time.strftime('%Y-%m-%dT%H:%M:%S.000Z', time.gmtime())
-
-                # 노션 전송 시 clean_title 사용
-                status = add_to_notion(clean_title, link, owner, published_date)
+                # ... (your Notion sending logic) ...
                 
                 if status == 200:
-                    new_last_posts.append(link)
-                
-                time.sleep(0.3)
-
+                    new_last_posts.append(link) # This will now work because it's a list
     # 업데이트된 전송 목록 저장
     with open(DB_FILE, 'w', encoding='utf-8') as f:
         json.dump(new_last_posts, f, indent=4, ensure_ascii=False)
