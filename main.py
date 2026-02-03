@@ -3,6 +3,7 @@ import requests
 import json
 import os
 import time
+import html 
 
 # RSS 피드 리스트
 RSS_FEEDS = {
