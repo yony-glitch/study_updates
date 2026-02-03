@@ -8,6 +8,9 @@ import time
 RSS_FEEDS = {
     "https://brunch.co.kr/rss/@@eZqg": "Cherry",
     "https://design-tra.tistory.com/rss": "Voyage: 사용자에게로 향하는 여정",
+    "https://brunch.co.kr/rss/@@a2Ed": "Nono",
+    "https://brunch.co.kr/rss/@@7pqA": "김영욱",
+    "https://brunch.co.kr/rss/@@eDYE": "florent"
 }
 
 NOTION_TOKEN = os.environ['NOTION_TOKEN']
