@@ -51,32 +51,32 @@ def check_feeds():
         if not feed.entries:
             continue
         
-        # 과거 글부터 처리하기 위해 리스트를 뒤집음 (선택 사항)
         for entry in reversed(feed.entries):
             link = entry.link
             
-            # 네이버 블로그 링크 정리
+            # 2. 제목의 특수 문자열(&amp;, &quot; 등)을 원래 문자로 치환
+            # entry.title이 없을 경우를 대비해 get() 사용
+            raw_title = entry.get('title', '제목 없음')
+            clean_title = html.unescape(raw_title)
+
             if "blog.naver.com" in link:
                 link = link.split('?')[0]
 
-            # 이미 보낸 링크인지 확인
             if link not in sent_links:
-                print(f"새로운 글 전송 중: {entry.title} (작성자: {owner})")
+                # 3. 깨끗해진 clean_title을 출력 및 전송
+                print(f"새로운 글 전송 중: {clean_title} (작성자: {owner})")
                 
-                # 날짜 처리
                 if entry.get('published_parsed'):
                     published_date = time.strftime('%Y-%m-%dT%H:%M:%S.000Z', entry.published_parsed)
                 else:
                     published_date = time.strftime('%Y-%m-%dT%H:%M:%S.000Z', time.gmtime())
 
-                status = add_to_notion(entry.title, link, owner, published_date)
+                # 노션 전송 시 clean_title 사용
+                status = add_to_notion(clean_title, link, owner, published_date)
                 
                 if status == 200:
-                    new_sent_links.append(link) # 성공 시 저장 목록에 추가
-                else:
-                    print(f"노션 전송 실패: {entry.title}")
+                    new_sent_links.append(link)
                 
-                # API 과부하 방지를 위한 짧은 휴식 (선택)
                 time.sleep(0.3)
 
     # 업데이트된 전송 목록 저장
