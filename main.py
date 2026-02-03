@@ -40,11 +40,11 @@ def check_feeds():
     # 이미 전송한 링크 목록 불러오기
     if os.path.exists(DB_FILE):
         with open(DB_FILE, 'r', encoding='utf-8') as f:
-            sent_links = json.load(f)
+            last_posts = json.load(f)
     else:
-        sent_links = [] # 처음 실행 시 빈 리스트
+        last_posts = [] # 처음 실행 시 빈 리스트
 
-    new_sent_links = sent_links.copy()
+    new_last_posts = last_posts.copy()
 
     for rss_url, owner in RSS_FEEDS.items():
         feed = feedparser.parse(rss_url)
@@ -62,7 +62,7 @@ def check_feeds():
             if "blog.naver.com" in link:
                 link = link.split('?')[0]
 
-            if link not in sent_links:
+            if link not in last_posts:
                 # 3. 깨끗해진 clean_title을 출력 및 전송
                 print(f"새로운 글 전송 중: {clean_title} (작성자: {owner})")
                 
@@ -75,13 +75,13 @@ def check_feeds():
                 status = add_to_notion(clean_title, link, owner, published_date)
                 
                 if status == 200:
-                    new_sent_links.append(link)
+                    new_last_posts.append(link)
                 
                 time.sleep(0.3)
 
     # 업데이트된 전송 목록 저장
     with open(DB_FILE, 'w', encoding='utf-8') as f:
-        json.dump(new_sent_links, f, indent=4, ensure_ascii=False)
+        json.dump(new_last_posts, f, indent=4, ensure_ascii=False)
 
 if __name__ == "__main__":
     check_feeds()
