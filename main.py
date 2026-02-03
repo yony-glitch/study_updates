@@ -13,9 +13,9 @@ RSS_FEEDS = {
     "https://brunch.co.kr/rss/@@eDYE": "florent"
 }
 
-NOTION_TOKEN = os.environ['NOTION_TOKEN']
-DATABASE_ID = os.environ['NOTION_DATABASE_ID']
-DB_FILE = 'last_posts.json'
+NOTION_TOKEN = os.environ.get('NOTION_TOKEN')
+DATABASE_ID = os.environ.get('NOTION_DATABASE_ID')
+DB_FILE = 'sent_links.json' # 이름을 좀 더 명확하게 변경
 
 def add_to_notion(title, link, owner_name, published_date):
     url = "https://api.notion.com/v1/pages"
@@ -34,91 +34,54 @@ def add_to_notion(title, link, owner_name, published_date):
         }
     }
     response = requests.post(url, headers=headers, json=data)
-    
-    if response.status_code != 200:
-        print(f"노션 전송 실패: {response.text}")
-        
     return response.status_code
 
 def check_feeds():
-    is_first_run = not os.path.exists(DB_FILE)
-
-    if not is_first_run:
-        with open(DB_FILE, 'r') as f:
-            last_posts = json.load(f)
+    # 이미 전송한 링크 목록 불러오기
+    if os.path.exists(DB_FILE):
+        with open(DB_FILE, 'r', encoding='utf-8') as f:
+            sent_links = json.load(f)
     else:
-        last_posts = {}
+        sent_links = [] # 처음 실행 시 빈 리스트
 
-    new_last_posts = last_posts.copy()
+    new_sent_links = sent_links.copy()
 
     for rss_url, owner in RSS_FEEDS.items():
         feed = feedparser.parse(rss_url)
         if not feed.entries:
             continue
+        
+        # 과거 글부터 처리하기 위해 리스트를 뒤집음 (선택 사항)
+        for entry in reversed(feed.entries):
+            link = entry.link
+            
+            # 네이버 블로그 링크 정리
+            if "blog.naver.com" in link:
+                link = link.split('?')[0]
 
-        entries = feed.entries
-
-        # ✅ 최초 실행: 모든 글 전송
-        if is_first_run:
-            print(f"[초기 동기화] {owner}의 글 {len(entries)}개 전송 시작")
-
-            for entry in reversed(entries):
-                link = entry.link
-                if "blog.naver.com" in link:
-                    link = link.split('?')[0]
-
+            # 이미 보낸 링크인지 확인
+            if link not in sent_links:
+                print(f"새로운 글 전송 중: {entry.title} (작성자: {owner})")
+                
+                # 날짜 처리
                 if entry.get('published_parsed'):
-                    published_date = time.strftime(
-                        '%Y-%m-%dT%H:%M:%S.000Z',
-                        entry.published_parsed
-                    )
+                    published_date = time.strftime('%Y-%m-%dT%H:%M:%S.000Z', entry.published_parsed)
                 else:
-                    published_date = time.strftime(
-                        '%Y-%m-%dT%H:%M:%S.000Z',
-                        time.gmtime()
-                    )
+                    published_date = time.strftime('%Y-%m-%dT%H:%M:%S.000Z', time.gmtime())
 
-                add_to_notion(
-                    entry.title,
-                    link,
-                    owner,
-                    published_date
-                )
-
-            # 가장 최신 글만 기록
-            latest_entry = entries[0]
-            new_last_posts[rss_url] = latest_entry.link
-
-        # ✅ 이후 실행: 새 글 1개만
-        else:
-            latest_entry = entries[0]
-            latest_link = latest_entry.link
-
-            if "blog.naver.com" in latest_link:
-                latest_link = latest_link.split('?')[0]
-
-            if latest_entry.get('published_parsed'):
-                published_date = time.strftime(
-                    '%Y-%m-%dT%H:%M:%S.000Z',
-                    latest_entry.published_parsed
-                )
-            else:
-                published_date = time.strftime(
-                    '%Y-%m-%dT%H:%M:%S.000Z',
-                    time.gmtime()
-                )
-
-            if last_posts.get(rss_url) != latest_link:
-                print(f"새 글 발견: {latest_entry.title} ({owner})")
-                status = add_to_notion(
-                    latest_entry.title,
-                    latest_link,
-                    owner,
-                    published_date
-                )
+                status = add_to_notion(entry.title, link, owner, published_date)
+                
                 if status == 200:
-                    new_last_posts[rss_url] = latest_link
+                    new_sent_links.append(link) # 성공 시 저장 목록에 추가
+                else:
+                    print(f"노션 전송 실패: {entry.title}")
+                
+                # API 과부하 방지를 위한 짧은 휴식 (선택)
+                time.sleep(0.3)
 
-    with open(DB_FILE, 'w') as f:
-        json.dump(new_last_posts, f, indent=4)
+    # 업데이트된 전송 목록 저장
+    with open(DB_FILE, 'w', encoding='utf-8') as f:
+        json.dump(new_sent_links, f, indent=4, ensure_ascii=False)
+
+if __name__ == "__main__":
     check_feeds()
