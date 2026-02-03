@@ -15,7 +15,7 @@ RSS_FEEDS = {
 
 NOTION_TOKEN = os.environ.get('NOTION_TOKEN')
 DATABASE_ID = os.environ.get('NOTION_DATABASE_ID')
-DB_FILE = 'sent_links.json' # 이름을 좀 더 명확하게 변경
+DB_FILE = 'last_posts.json'
 
 def add_to_notion(title, link, owner_name, published_date):
     url = "https://api.notion.com/v1/pages"
