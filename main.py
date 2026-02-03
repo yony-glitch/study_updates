@@ -3,7 +3,7 @@ import requests
 import json
 import os
 import time
-import html 
+import html  # html.unescape를 위해 추가
 
 # RSS 피드 리스트
 RSS_FEEDS = {
@@ -38,12 +38,18 @@ def add_to_notion(title, link, owner_name, published_date):
     return response.status_code
 
 def check_feeds():
-    # 1. Load existing posts
+    # 이미 전송한 링크 목록 불러오기
     if os.path.exists(DB_FILE):
         with open(DB_FILE, 'r', encoding='utf-8') as f:
-            data = json.load(f)
-            # Ensure we are working with a list even if the file is a dict
-            last_posts = data if isinstance(data, list) else list(data.keys())
+            try:
+                data = json.load(f)
+                # last_posts가 리스트인지 확인하여 안전하게 불러오기
+                if isinstance(data, list):
+                    last_posts = data
+                else:
+                    last_posts = []
+            except json.JSONDecodeError:
+                last_posts = []
     else:
         last_posts = []
 
@@ -57,13 +63,32 @@ def check_feeds():
         for entry in reversed(feed.entries):
             link = entry.link
             
-            # ... (your title cleaning logic) ...
+            # 제목의 특수 문자열 치환
+            raw_title = entry.get('title', '제목 없음')
+            clean_title = html.unescape(raw_title)
+
+            if "blog.naver.com" in link:
+                link = link.split('?')[0]
 
             if link not in last_posts:
-                # ... (your Notion sending logic) ...
+                print(f"새로운 글 전송 중: {clean_title} (작성자: {owner})")
                 
+                if entry.get('published_parsed'):
+                    published_date = time.strftime('%Y-%m-%dT%H:%M:%S.000Z', entry.published_parsed)
+                else:
+                    published_date = time.strftime('%Y-%m-%dT%H:%M:%S.000Z', time.gmtime())
+
+                # 노션 전송 (status 정의)
+                status = add_to_notion(clean_title, link, owner, published_date)
+                
+                # status 체크를 if link not in last_posts 안으로 이동
                 if status == 200:
-                    new_last_posts.append(link) # This will now work because it's a list
+                    new_last_posts.append(link)
+                else:
+                    print(f"노션 전송 실패: {status}")
+                
+                time.sleep(0.3)
+
     # 업데이트된 전송 목록 저장
     with open(DB_FILE, 'w', encoding='utf-8') as f:
         json.dump(new_last_posts, f, indent=4, ensure_ascii=False)
