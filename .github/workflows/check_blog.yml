@@ -1,10 +1,52 @@
-name: Flexible Blog Check (Notion)
+# name: Flexible Blog Check (Notion)
+
+# on:
+#   schedule:
+#     # 평소: 매 2시간마다 (UTC 기준 0, 2, 4...시 / 한국시간 9, 11, 13...시)
+#     - cron: '0 */2 * * *'
+
+#   workflow_dispatch: # 수동 실행 버튼
+
+# jobs:
+#   build:
+#     runs-on: ubuntu-latest
+#     permissions:
+#       contents: write
+
+#     steps:
+#       - name: Checkout code
+#         uses: actions/checkout@v3
+
+#       - name: Set up Python
+#         uses: actions/setup-python@v4
+#         with:
+#           python-version: '3.9'
+
+#       - name: Install dependencies
+#         run: |
+#           pip install feedparser requests
+
+#       - name: Run script
+#         env:
+#           NOTION_TOKEN: ${{ secrets.NOTION_TOKEN }}
+#           NOTION_DATABASE_ID: ${{ secrets.NOTION_DATABASE_ID }}
+#         run: python main.py
+
+#       - name: Commit changes
+#         run: |
+#           git config --global user.name 'github-actions[bot]'
+#           git config --global user.email 'github-actions[bot]@users.noreply.github.com'
+#           git add last_posts.json
+#           git commit -m "Update last posts" || echo "No changes to commit"
+#           git push
+
+
+name: Flexible Blog Check (Google Sheets)
 
 on:
   schedule:
-    # 평소: 매 2시간마다 (UTC 기준 0, 2, 4...시 / 한국시간 9, 11, 13...시)
+    # 매 2시간마다 실행
     - cron: '0 */2 * * *'
-
   workflow_dispatch: # 수동 실행 버튼
 
 jobs:
@@ -28,8 +70,8 @@ jobs:
 
       - name: Run script
         env:
-          NOTION_TOKEN: ${{ secrets.NOTION_TOKEN }}
-          NOTION_DATABASE_ID: ${{ secrets.NOTION_DATABASE_ID }}
+          # GitHub Secrets에 저장한 GOOGLE_SHEET_URL을 파이썬으로 전달
+          GOOGLE_SHEET_URL: ${{ secrets.GOOGLE_SHEET_URL }}
         run: python main.py
 
       - name: Commit changes
@@ -37,5 +79,5 @@ jobs:
           git config --global user.name 'github-actions[bot]'
           git config --global user.email 'github-actions[bot]@users.noreply.github.com'
           git add last_posts.json
-          git commit -m "Update last posts" || echo "No changes to commit"
+          git commit -m "Update last posts (Google Sheets)" || echo "No changes to commit"
           git push
