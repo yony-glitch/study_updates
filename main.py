@@ -41,45 +41,84 @@ def add_to_notion(title, link, owner_name, published_date):
     return response.status_code
 
 def check_feeds():
-    if os.path.exists(DB_FILE):
+    is_first_run = not os.path.exists(DB_FILE)
+
+    if not is_first_run:
         with open(DB_FILE, 'r') as f:
             last_posts = json.load(f)
     else:
         last_posts = {}
-  
+
     new_last_posts = last_posts.copy()
 
     for rss_url, owner in RSS_FEEDS.items():
         feed = feedparser.parse(rss_url)
         if not feed.entries:
             continue
-        
-        latest_entry = feed.entries[0]
-        latest_link = latest_entry.link
 
-        # 네이버 블로그 링크 정리
-        if "blog.naver.com" in latest_link:
-            latest_link = latest_link.split('?')[0]
+        entries = feed.entries
 
-        # [수정됨] 날짜 정보 처리: owner_name을 owner로 변경하고 안정성 강화
-        if latest_entry.get('published_parsed'):
-            published_date = time.strftime('%Y-%m-%dT%H:%M:%S.000Z', latest_entry.published_parsed)
+        # ✅ 최초 실행: 모든 글 전송
+        if is_first_run:
+            print(f"[초기 동기화] {owner}의 글 {len(entries)}개 전송 시작")
+
+            for entry in reversed(entries):
+                link = entry.link
+                if "blog.naver.com" in link:
+                    link = link.split('?')[0]
+
+                if entry.get('published_parsed'):
+                    published_date = time.strftime(
+                        '%Y-%m-%dT%H:%M:%S.000Z',
+                        entry.published_parsed
+                    )
+                else:
+                    published_date = time.strftime(
+                        '%Y-%m-%dT%H:%M:%S.000Z',
+                        time.gmtime()
+                    )
+
+                add_to_notion(
+                    entry.title,
+                    link,
+                    owner,
+                    published_date
+                )
+
+            # 가장 최신 글만 기록
+            latest_entry = entries[0]
+            new_last_posts[rss_url] = latest_entry.link
+
+        # ✅ 이후 실행: 새 글 1개만
         else:
-            published_date = time.strftime('%Y-%m-%dT%H:%M:%S.000Z', time.gmtime())
-            print(f"공지: '{owner}'의 최신 글 날짜를 읽을 수 없어 현재 시간으로 기록합니다.")
+            latest_entry = entries[0]
+            latest_link = latest_entry.link
 
-        # 새 글 여부 확인 및 노션 전송
-        if rss_url not in last_posts or last_posts[rss_url] != latest_link:
-            print(f"새 글 발견: {latest_entry.title} (작성자: {owner})")
-            
-            # 여기서 owner 변수를 사용하여 노션에 전송합니다.
-            status = add_to_notion(latest_entry.title, latest_link, owner, published_date)
-            
-            if status == 200:
-                new_last_posts[rss_url] = latest_link
+            if "blog.naver.com" in latest_link:
+                latest_link = latest_link.split('?')[0]
+
+            if latest_entry.get('published_parsed'):
+                published_date = time.strftime(
+                    '%Y-%m-%dT%H:%M:%S.000Z',
+                    latest_entry.published_parsed
+                )
+            else:
+                published_date = time.strftime(
+                    '%Y-%m-%dT%H:%M:%S.000Z',
+                    time.gmtime()
+                )
+
+            if last_posts.get(rss_url) != latest_link:
+                print(f"새 글 발견: {latest_entry.title} ({owner})")
+                status = add_to_notion(
+                    latest_entry.title,
+                    latest_link,
+                    owner,
+                    published_date
+                )
+                if status == 200:
+                    new_last_posts[rss_url] = latest_link
 
     with open(DB_FILE, 'w') as f:
         json.dump(new_last_posts, f, indent=4)
-
-if __name__ == "__main__":
     check_feeds()
