@@ -131,7 +131,23 @@ import re
 RSS_FEEDS = {
     "https://brunch.co.kr/rss/@@eZqg": "Cherry",
     "https://design-tra.tistory.com/rss": "Voyage: 사용자에게로 향하는 여정",
-    # ... (생략) ...
+    "https://brunch.co.kr/rss/@@a2Ed": "Nono",
+    "https://brunch.co.kr/rss/@@7pqA": "김영욱",
+    "https://brunch.co.kr/rss/@@eDYE": "florent",
+    "https://brunch.co.kr/rss/@@31zt": "tami",
+    "https://brunch.co.kr/rss/@@a1Ap": "이성긍",
+    "https://brunch.co.kr/rss/@@fcZn": "비이크",
+    "https://brunch.co.kr/rss/@@3wuQ": "kaily",
+    "https://brunch.co.kr/rss/@@eCrw": "세기말 서비스기획자들",
+    "https://brunch.co.kr/rss/@@2Y6c": "회사원숭 소피",
+    "https://brunch.co.kr/rss/@@4zJ": "서점직원",
+    "https://brunch.co.kr/rss/@@7aZb": "타비",
+    "https://brunch.co.kr/rss/@@3A7": "밤열두시",
+    "https://brunch.co.kr/rss/@@10mY": "이선주",
+    "https://brunch.co.kr/rss/@@PAH": "박세호",
+    "https://brunch.co.kr/rss/@@6C10": "김경환",
+    "https://brunch.co.kr/rss/@@GGz": "Jinhee Park",
+    "https://brunch.co.kr/rss/@@2hV3": "우디",
     "https://brunch.co.kr/rss/@@6Lbn": "김현준",
 }
 
