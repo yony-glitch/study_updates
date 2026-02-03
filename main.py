@@ -11,7 +11,13 @@ RSS_FEEDS = {
     "https://design-tra.tistory.com/rss": "Voyage: 사용자에게로 향하는 여정",
     "https://brunch.co.kr/rss/@@a2Ed": "Nono",
     "https://brunch.co.kr/rss/@@7pqA": "김영욱",
-    "https://brunch.co.kr/rss/@@eDYE": "florent"
+    "https://brunch.co.kr/rss/@@eDYE": "florent",
+    "https://brunch.co.kr/rss/@@31zt": "tami",
+    "https://brunch.co.kr/rss/@@a1Ap": "이성긍",
+    "https://brunch.co.kr/rss/@@fcZn": "비이크",
+    "https://brunch.co.kr/rss/@@3wuQ": "kaily",
+    "https://brunch.co.kr/rss/@@eCrw": "세기말 서비스기획자들",
+    "https://brunch.co.kr/rss/@@2Y6c": "회사원숭 소피"
 }
 
 NOTION_TOKEN = os.environ.get('NOTION_TOKEN')
