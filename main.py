@@ -117,8 +117,6 @@
 #     check_feeds()
 
 
-
-
 import feedparser
 import requests
 import json
@@ -127,7 +125,7 @@ import time
 import html
 import re
 
-# RSS 피드 리스트 (기존 리스트와 동일)
+# RSS 피드 리스트
 RSS_FEEDS = {
     "https://brunch.co.kr/rss/@@eZqg": "Cherry",
     "https://design-tra.tistory.com/rss": "Voyage: 사용자에게로 향하는 여정",
@@ -151,12 +149,11 @@ RSS_FEEDS = {
     "https://brunch.co.kr/rss/@@6Lbn": "김현준",
 }
 
-# 구글 앱스 스크립트 배포 URL (1단계에서 복사한 URL을 환경 변수에 넣으세요)
+# 구글 앱스 스크립트 배포 URL (환경 변수)
 GOOGLE_SHEET_URL = os.environ.get('GOOGLE_SHEET_URL') 
 DB_FILE = 'last_posts.json'
 
 def add_to_google_sheet(title, link, owner_name, published_date, description):
-    # 구글 시트로 보낼 데이터 포맷
     data = {
         "title": title,
         "link": link,
@@ -164,30 +161,42 @@ def add_to_google_sheet(title, link, owner_name, published_date, description):
         "date": published_date,
         "description": description
     }
-    
-    # GAS 웹 앱으로 POST 요청
-    response = requests.post(GOOGLE_SHEET_URL, json=data)
-    return response.status_code
+    try:
+        response = requests.post(GOOGLE_SHEET_URL, json=data)
+        return response.status_code
+    except:
+        return 500
 
 def check_feeds():
+    # 1. 마지막 전송 정보 불러오기 (딕셔너리 구조: { "RSS_URL": "LAST_LINK" })
     if os.path.exists(DB_FILE):
         with open(DB_FILE, 'r', encoding='utf-8') as f:
             try:
-                data = json.load(f)
-                last_posts = data if isinstance(data, list) else []
+                last_posts = json.load(f)
+                if not isinstance(last_posts, dict):
+                    last_posts = {}
             except json.JSONDecodeError:
-                last_posts = []
+                last_posts = {}
     else:
-        last_posts = []
-
-    new_last_posts = last_posts.copy()
+        last_posts = {}
 
     for rss_url, owner in RSS_FEEDS.items():
         feed = feedparser.parse(rss_url)
         if not feed.entries:
             continue
         
-        for entry in reversed(feed.entries):
+        # 해당 블로그에서 마지막으로 확인했던 글의 링크
+        last_link = last_posts.get(rss_url)
+        
+        # 새 글들만 필터링 (최신순이므로 뒤집어서 오래된 글부터 처리)
+        new_entries = []
+        for entry in feed.entries:
+            if entry.link == last_link:
+                break
+            new_entries.append(entry)
+        
+        # 전송 처리 (오래된 순서대로 전송)
+        for entry in reversed(new_entries):
             link = entry.link
             
             raw_title = entry.get('title', '제목 없음')
@@ -196,32 +205,35 @@ def check_feeds():
             raw_desc = entry.get('description', '')
             clean_desc = re.sub(r'<[^>]+>', '', raw_desc)
             clean_desc = html.unescape(clean_desc).strip()
-            # 구글 시트는 글자수 제한이 널널하지만 가독성을 위해 1500자 제한
             clean_desc = (clean_desc[:1500] + '...') if len(clean_desc) > 1500 else clean_desc
 
             if "blog.naver.com" in link:
                 link = link.split('?')[0]
 
-            if link not in last_posts:
-                print(f"새로운 글 전송 중: {clean_title} (작성자: {owner})")
-                
-                if entry.get('published_parsed'):
-                    published_date = time.strftime('%Y-%m-%d %H:%M:%S', entry.published_parsed)
-                else:
-                    published_date = time.strftime('%Y-%m-%d %H:%M:%S', time.gmtime())
+            print(f"새로운 글 전송 중: {clean_title} (작성자: {owner})")
+            
+            if entry.get('published_parsed'):
+                published_date = time.strftime('%Y-%m-%d %H:%M:%S', entry.published_parsed)
+            else:
+                published_date = time.strftime('%Y-%m-%d %H:%M:%S', time.gmtime())
 
-                # 구글 시트 전송 호출
-                status = add_to_google_sheet(clean_title, link, owner, published_date, clean_desc)
-                
-                if status == 200:
-                    new_last_posts.append(link)
-                else:
-                    print(f"구글 시트 전송 실패: {status}")
-                
-                time.sleep(0.3)
+            status = add_to_google_sheet(clean_title, link, owner, published_date, clean_desc)
+            
+            if status == 200:
+                # 전송 성공 시, 해당 블로그의 최신 링크를 업데이트
+                last_posts[rss_url] = link
+            else:
+                print(f"전송 실패: {status}")
+            
+            time.sleep(0.3)
 
+        # 만약 해당 블로그에 처음 접근한 경우라면, 현재의 최신 글을 마지막 글로 저장 (다음 실행부터 체크)
+        if rss_url not in last_posts and feed.entries:
+            last_posts[rss_url] = feed.entries[0].link
+
+    # 2. 업데이트된 마지막 전송 정보 저장
     with open(DB_FILE, 'w', encoding='utf-8') as f:
-        json.dump(new_last_posts, f, indent=4, ensure_ascii=False)
+        json.dump(last_posts, f, indent=4, ensure_ascii=False)
 
 if __name__ == "__main__":
     check_feeds()
