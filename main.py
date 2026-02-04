@@ -149,7 +149,12 @@ RSS_FEEDS = {
     "https://brunch.co.kr/rss/@@6Lbn": "김현준",
     "https://prime-career.tistory.com/rss": "프라임 커리어",
     "https://dabinlee.tistory.com/rss": "다람이의 공부방",
-    "https://soosunnaa.tistory.com/rss": "SOOSUNNAA"
+    "https://soosunnaa.tistory.com/rss": "SOOSUNNAA",
+    "https://germweapon.tistory.com/rss": "세균무기",
+    "https://brunch.co.kr/rss/@@4vT": "조영수",
+    "https://brunch.co.kr/rss/@@1bJx": "Sunny Lee",
+    "https://brunch.co.kr/rss/@@79HT": "Yuni",
+    
 }
 
 # 구글 앱스 스크립트 배포 URL (환경 변수)
