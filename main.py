@@ -154,7 +154,12 @@ RSS_FEEDS = {
     "https://brunch.co.kr/rss/@@4vT": "조영수",
     "https://brunch.co.kr/rss/@@1bJx": "Sunny Lee",
     "https://brunch.co.kr/rss/@@79HT": "Yuni",
-    
+    "https://brunch.co.kr/rss/@@7wf4": "꿈꾸는밍",
+    "https://brunch.co.kr/rss/@@hZdl": "비니",
+    "https://brunch.co.kr/rss/@@92ovg": "디자이너강",
+    "https://brunch.co.kr/rss/@@9zTH": "이동석",
+    "https://brunch.co.kr/rss/@@aseH": "MODAY",
+    "https://brunch.co.kr/rss/@@ca1X": "bom"
 }
 
 # 구글 앱스 스크립트 배포 URL (환경 변수)
