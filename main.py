@@ -161,7 +161,11 @@ RSS_FEEDS = {
     "https://brunch.co.kr/rss/@@aseH": "MODAY",
     "https://brunch.co.kr/rss/@@ca1X": "bom",
     "https://www.youtube.com/feeds/videos.xml?channel_id=UCxRnfrmJAkRLarzeBJETB5g": "Madia Designer",
-    "https://specialsook.tistory.com/rss": "기획자 쑥쑥이"
+    "https://specialsook.tistory.com/rss": "기획자 쑥쑥이",
+    "https://managemylife.tistory.com/rss": "기획 처음하는 사람",
+    "https://brunch.co.kr/rss/@@9NXb": "달하",
+    "https://da-ne.tistory.com/rss": "다_네의 빈칸채우기",
+    "https://phalanx-club.tistory.com/rss": "팔랑크스: 전국대학연합 기획/컨설팅 동아리"
 }
 
 # 구글 앱스 스크립트 배포 URL (환경 변수)
