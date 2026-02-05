@@ -159,7 +159,8 @@ RSS_FEEDS = {
     "https://brunch.co.kr/rss/@@92ovg": "디자이너강",
     "https://brunch.co.kr/rss/@@9zTH": "이동석",
     "https://brunch.co.kr/rss/@@aseH": "MODAY",
-    "https://brunch.co.kr/rss/@@ca1X": "bom"
+    "https://brunch.co.kr/rss/@@ca1X": "bom",
+    "https://www.youtube.com/feeds/videos.xml?channel_id=UCxRnfrmJAkRLarzeBJETB5g": "Madia Designer",
 }
 
 # 구글 앱스 스크립트 배포 URL (환경 변수)
