@@ -161,6 +161,7 @@ RSS_FEEDS = {
     "https://brunch.co.kr/rss/@@aseH": "MODAY",
     "https://brunch.co.kr/rss/@@ca1X": "bom",
     "https://www.youtube.com/feeds/videos.xml?channel_id=UCxRnfrmJAkRLarzeBJETB5g": "Madia Designer",
+    "https://specialsook.tistory.com/rss": "기획자 쑥쑥이"
 }
 
 # 구글 앱스 스크립트 배포 URL (환경 변수)
